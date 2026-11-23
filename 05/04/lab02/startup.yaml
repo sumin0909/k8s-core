@@ -1,0 +1,33 @@
+apiVersion: v1                # Kubernetes API 버전 (Pod는 v1 사용)
+kind: Pod                     # 생성할 리소스 종류: Pod
+
+metadata:                     # Pod의 메타데이터
+  name: startup        # Pod 이름
+  namespace: lab02            # Pod가 생성될 Namespace
+
+spec:                         # Pod 실행 설정
+  terminationGracePeriodSeconds: 5  # Pod 종료 시 정상 종료를 기다리는 유예 시간 (5초)
+  containers:                 # Pod 내부에서 실행할 컨테이너 목록
+  - name: nginx               # 컨테이너 이름
+    image: nginx:1.30         # 사용할 컨테이너 이미지
+    ports:
+    - containerPort: 80       # 컨테이너가 사용하는 포트 (80)
+    command: ["sh", "-c", "sleep 30; exec nginx -g 'daemon off;'"]
+    livenessProbe:            # 컨테이너가 정상적으로 살아 있는지 확인하는 검사
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 0 # 컨테이너 시작 후 최초 검사까지 대기 시간 (0초)
+      timeoutSeconds: 5      # 검사 응답 제한 시간 (10초, 초과하면 실패)
+      periodSeconds: 1        # 검사 주기 (1초마다 검사)
+      successThreshold: 1     # 성공 1회면 정상으로 판단
+      failureThreshold: 3     # 연속 3회 실패하면 비정상으로 판단하고 컨테이너 재시작
+    startupProbe:            # 컨테이너가 정상적으로 살아 있는지 확인하는 검사
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 0 # 컨테이너 시작 후 최초 검사까지 대기 시간 (0초)
+      timeoutSeconds: 5      # 검사 응답 제한 시간 (10초, 초과하면 실패)
+      periodSeconds: 1        # 검사 주기 (1초마다 검사)
+      successThreshold: 1     # 성공 1회면 정상으로 판단
+      failureThreshold: 12     # 연속 3회 실패하면 비정상으로 판단하고 컨테이너 재시작
